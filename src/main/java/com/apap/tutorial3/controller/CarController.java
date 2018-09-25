@@ -37,19 +37,6 @@ public class CarController {
 		return "view-car";
 	}
 	
-	@RequestMapping(value= {"/car/view","car/view/{id}"})
-	public String viewById(@PathVariable Optional <String> id, Model model) {
-		List <CarModel> archive = mobilService.getCarList();
-
-		for(int i= 0; i< archive.size(); i++) {
-			if(archive.get(i).getId().equals(id.get())) {
-				model.addAttribute("car", archive.get(i));
-			}
-		}
-		return "viewby-id";
-	}
-	
-	
 	@RequestMapping("/car/viewall")
 	public String viewall (Model model) {
 		List <CarModel> archive = mobilService.getCarList();
@@ -58,25 +45,74 @@ public class CarController {
 		return "viewall-car";
 	}
 	
-	
-	
-	@RequestMapping(value= {"/car/update/{id}/amount/{amount}"})
-	public String changeAmount(@PathVariable Optional<String> id, Optional<Integer> amount, Model model) {
-		CarModel carModel = mobilService.getCarDetail(id.get());
-		if (carModel != null) {
-			carModel.setAmount(amount.get());
-			model.addAttribute("car", carModel);
+	@RequestMapping(value= {"/car/view","car/view/{id}"})
+	public String viewById(@PathVariable Optional <String> id, Model model) {
+		
+		if (id.isPresent()) {
+			List <CarModel> archive = mobilService.getCarList();
+
+			for(int i= 0; i< archive.size(); i++) {
+				if(archive.get(i).getId().equals(id.get())) {
+					model.addAttribute("car", archive.get(i));
+				}
+			}
+			return "viewby-id";
+
 			
-		} 
+		}
 		else {
+			model.addAttribute("errorMsgType", "Id kosong");
 			return "errorMsg";
 		}
 		
-		
-		return "amountChanged";
-		 
+	}
+	
+	@RequestMapping(value= {"/car/update/{id}/amount/{amount}"})
+	public String changeAmount(@PathVariable Optional<String> id, @PathVariable Integer amount, Model model) {
+		if (id.isPresent()) {
+			CarModel carModel = mobilService.getCarDetail(id.get());			
+			if (carModel!=null) {
+				carModel.setAmount(amount);
+				model.addAttribute("car", carModel);
+				return "amountChanged";
+			}
+			else {
+				model.addAttribute("errorMsgType", "id tidak ada");
+			}
+			
+		}
+		else {
+			model.addAttribute("errorMsgType", "Id kosong");
+			
+		}
+		return "errorMsg";
+	}
+	
+	@RequestMapping(value = {"/car/delete/{id}"})
+	public String deleteById(@PathVariable Optional<String> id,  Model model) {
+		if(id.isPresent()) {
+			CarModel carModel = mobilService.getCarDetail(id.get());
+			List <CarModel> archive = mobilService.getCarList();
+			
+			if(carModel != null) {
+				for(int i=0; i < archive.size(); i++) {
+					if(archive.get(i).getId().equals(id.get())) {
+						archive.remove(i);
+						model.addAttribute("delete", "Berhasil dihapus");	
+					}
+					else {
+						model.addAttribute("delete", "id tidak ada");
+					}	
+				}
+			}
+			else {
+				model.addAttribute("delete", "id tidak ada");
+			}
+		}
+		else {
+			model.addAttribute("delete", "id tidak ada");
+		}
+		return "delete";
 		
 	}
-
-	
 }
